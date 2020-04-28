@@ -7,6 +7,7 @@ import (
 	"qask/internal/app/model"
 	"qask/internal/app/questions"
 	"qask/internal/app/store"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -37,8 +38,30 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) configureRouter() {
+	s.router.Use(s.logRequest)
 	s.router.HandleFunc("/questions", s.handleQuestionsGet()).Methods("GET")
 	s.router.HandleFunc("/users", s.handleUsersPost()).Methods("POST")
+}
+
+func (s *server) logRequest(next http.Handler) http.Handler {
+	type responseWriter struct {
+		http.ResponseWriter
+		code int
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger := s.logger.WithFields(logrus.Fields{
+			"remote_addr": r.RemoteAddr,
+		})
+		logger.Infof("started request %s %s", r.RequestURI, r.Method)
+
+		start := time.Now()
+		newResponseWriter := responseWriter{w, http.StatusOK}
+
+		next.ServeHTTP(newResponseWriter, r)
+
+		logger.Infof("result code = %d in = %f sec", newResponseWriter.code, time.Now().Sub(start).Seconds())
+	})
 }
 
 func (s *server) handleQuestionsGet() http.HandlerFunc {
