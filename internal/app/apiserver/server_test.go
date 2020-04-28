@@ -90,6 +90,55 @@ func Test_server_handleQuestionsGet(t *testing.T) {
 	}
 }
 
+func Test_server_handleUsersGet(t *testing.T) {
+	store := teststore.New()
+	questions := testwww.New()
+	s := newServer(store, questions)
+
+	tests := []struct {
+		name    string
+		payload interface{}
+		expect  int
+	}{
+		{
+			name: "valid request",
+			payload: map[string]string{
+				"from": "telegram",
+			},
+			expect: http.StatusOK,
+		},
+		{
+			name: "invalid request (invalid from)",
+			payload: map[string]string{
+				"from": "telega",
+			},
+			expect: http.StatusBadRequest,
+		},
+		{
+			name:    "invalid request (nil payload)",
+			payload: nil,
+			expect:  http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+
+			b := &bytes.Buffer{}
+			if tt.payload != nil {
+				err := json.NewEncoder(b).Encode(tt.payload)
+				assert.NoError(t, err)
+			}
+
+			req, err := http.NewRequest(http.MethodGet, "/users", b)
+			assert.NoError(t, err)
+
+			s.ServeHTTP(rec, req)
+			assert.Equal(t, tt.expect, rec.Code)
+		})
+	}
+}
+
 func Test_server_handleUsersPost(t *testing.T) {
 	store := teststore.New()
 	questions := testwww.New()
@@ -101,11 +150,6 @@ func Test_server_handleUsersPost(t *testing.T) {
 		payload interface{}
 		expect  int
 	}{
-		{
-			name:   "invalid method get",
-			method: http.MethodGet,
-			expect: http.StatusMethodNotAllowed,
-		},
 		{
 			name:   "invalid method put",
 			method: http.MethodPut,
