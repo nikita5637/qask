@@ -5,12 +5,72 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"qask/internal/app/model"
 	"qask/internal/app/questions/testwww"
 	"qask/internal/app/store/teststore"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func Test_server_handleGetUser(t *testing.T) {
+	store := teststore.New()
+	questions := testwww.New()
+	s := newServer(store, questions)
+
+	user := model.TestUser()
+	s.store.User().CreateUser(user)
+
+	tests := []struct {
+		name    string
+		path    string
+		payload interface{}
+		expect  int
+	}{
+		{
+			name: "valid request",
+			path: "/users/1",
+			payload: map[string]string{
+				"from": "telegram",
+			},
+			expect: http.StatusOK,
+		},
+		{
+			name: "invalid request (user not found)",
+			path: "/users/2",
+			payload: map[string]string{
+				"from": "telegram",
+			},
+			expect: http.StatusNotFound,
+		},
+		{
+			name: "invalid request (invalid from)",
+			path: "/users/2",
+			payload: map[string]string{
+				"from": "telega",
+			},
+			expect: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rec := httptest.NewRecorder()
+
+			b := &bytes.Buffer{}
+			if tt.payload != nil {
+				err := json.NewEncoder(b).Encode(tt.payload)
+				assert.NoError(t, err)
+			}
+
+			req, err := http.NewRequest(http.MethodGet, tt.path, b)
+			assert.NoError(t, err)
+
+			s.ServeHTTP(rec, req)
+			assert.Equal(t, tt.expect, rec.Code)
+		})
+	}
+}
 
 func Test_server_handleQuestionsGet(t *testing.T) {
 	store := teststore.New()
