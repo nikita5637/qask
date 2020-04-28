@@ -58,3 +58,15 @@ func (u *UserRepository) FindUserByUserName(userName string) *model.User {
 
 	return nil
 }
+
+//GetUsers returns all system users
+func (u *UserRepository) GetUsers() []*model.User {
+	users := make([]*model.User, len(u.users))
+	i := 0
+	for _, user := range u.users {
+		users[i] = user
+		i++
+	}
+
+	return users
+}

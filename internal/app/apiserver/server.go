@@ -40,6 +40,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *server) configureRouter() {
 	s.router.Use(s.logRequest)
 	s.router.HandleFunc("/questions", s.handleQuestionsGet()).Methods("GET")
+	s.router.HandleFunc("/users", s.handleUsersGet()).Methods("GET")
 	s.router.HandleFunc("/users", s.handleUsersPost()).Methods("POST")
 }
 
@@ -94,6 +95,34 @@ func (s *server) handleQuestionsGet() http.HandlerFunc {
 
 		w.Header().Add("Content-Type", "application/json")
 		s.respond(w, r, http.StatusOK, q)
+	})
+}
+
+func (s *server) handleUsersGet() http.HandlerFunc {
+	type request struct {
+		From string `json:"from"`
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Body == nil {
+			s.error(w, r, http.StatusBadRequest, errors.New("Empty body"))
+			return
+		}
+
+		req := &request{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		if req.From != "telegram" {
+			s.error(w, r, http.StatusBadRequest, errors.New("Unknown From"))
+			return
+		}
+
+		users := s.store.User().GetUsers()
+
+		s.respond(w, r, http.StatusOK, users)
 	})
 }
 
