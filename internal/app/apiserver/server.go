@@ -7,6 +7,7 @@ import (
 	"qask/internal/app/model"
 	"qask/internal/app/questions"
 	"qask/internal/app/store"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -42,6 +43,7 @@ func (s *server) configureRouter() {
 	s.router.HandleFunc("/questions", s.handleQuestionsGet()).Methods("GET")
 	s.router.HandleFunc("/users", s.handleUsersGet()).Methods("GET")
 	s.router.HandleFunc("/users", s.handleUsersPost()).Methods("POST")
+	s.router.HandleFunc("/users/{id:[0-9]+}", s.handleGetUser()).Methods("GET")
 }
 
 func (s *server) logRequest(next http.Handler) http.Handler {
@@ -62,6 +64,47 @@ func (s *server) logRequest(next http.Handler) http.Handler {
 		next.ServeHTTP(newResponseWriter, r)
 
 		logger.Infof("result code = %d in = %f sec", newResponseWriter.code, time.Now().Sub(start).Seconds())
+	})
+}
+
+func (s *server) handleGetUser() http.HandlerFunc {
+	type request struct {
+		From string `json:"from"`
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Body == nil {
+			s.error(w, r, http.StatusBadRequest, errors.New("Empty body"))
+			return
+		}
+
+		req := &request{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		if req.From != "telegram" {
+			s.error(w, r, http.StatusBadRequest, errors.New("Unknown From"))
+			return
+		}
+
+		vars := mux.Vars(r)
+		strID := vars["id"]
+		id, err := strconv.Atoi(strID)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, errors.New("Invalid user id"))
+			return
+		}
+
+		user := s.store.User().FindUserByID(id)
+		if user == nil {
+			s.error(w, r, http.StatusNotFound, errors.New("User not found"))
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		s.respond(w, r, http.StatusOK, user)
 	})
 }
 
@@ -122,6 +165,7 @@ func (s *server) handleUsersGet() http.HandlerFunc {
 
 		users := s.store.User().GetUsers()
 
+		w.Header().Add("Content-Type", "application/json")
 		s.respond(w, r, http.StatusOK, users)
 	})
 }
