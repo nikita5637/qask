@@ -37,6 +37,17 @@ func (u *UserRepository) findUser(user *model.User) *model.User {
 	return nil
 }
 
+//FindUserByID is a function for searching user by id
+func (u *UserRepository) FindUserByID(ID int) *model.User {
+	for _, u := range u.users {
+		if u.ID == ID {
+			return u
+		}
+	}
+
+	return nil
+}
+
 //FindUserByTgID is a function for searching user by telegram id
 func (u *UserRepository) FindUserByTgID(tgID int64) *model.User {
 	for _, u := range u.users {

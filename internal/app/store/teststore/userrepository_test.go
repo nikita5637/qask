@@ -38,6 +38,20 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestUserRepository_FindUserByID(t *testing.T) {
+	store := New()
+
+	testUser := model.TestUser()
+	err := store.User().CreateUser(testUser)
+	assert.NoError(t, err)
+
+	user := store.User().FindUserByID(1)
+	assert.NotNil(t, user)
+
+	user = store.User().FindUserByID(2)
+	assert.Nil(t, user)
+}
+
 func TestUserRepository_FindUserByTgID(t *testing.T) {
 	store := New()
 
