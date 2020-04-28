@@ -20,7 +20,8 @@ func (u *UserRepository) CreateUser(user *model.User) error {
 		return store.ErrUserExists
 	}
 
-	u.users[len(u.users)+1] = user
+	user.ID = len(u.users) + 1
+	u.users[user.ID] = user
 
 	return nil
 }

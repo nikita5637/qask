@@ -130,7 +130,7 @@ func (s *server) handleUsersPost() http.HandlerFunc {
 			return
 		}
 
-		s.respond(w, r, http.StatusCreated, "")
+		s.respond(w, r, http.StatusCreated, newUser)
 	})
 }
 
