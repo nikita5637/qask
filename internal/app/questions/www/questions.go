@@ -2,7 +2,7 @@ package www
 
 import (
 	"qask/internal/app/questions"
-	"qask/internal/app/questions/www/db_chgk_info"
+	db_chgk_info "qask/internal/app/questions/www/dbchgkinfo"
 	"qask/internal/app/questions/www/problems_ru"
 )
 
