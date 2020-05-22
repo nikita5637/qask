@@ -1,4 +1,4 @@
-package db_chgk_info
+package dbchgkinfo
 
 import (
 	"errors"
