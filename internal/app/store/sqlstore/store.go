@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"qask/internal/app/store"
 
-	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql" //mysql
+	_ "github.com/lib/pq"              //postgres
 )
 
 //Store is a struct with db
