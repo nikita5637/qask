@@ -7,7 +7,7 @@ import (
 
 //UserRepository is a users store for testing
 type UserRepository struct {
-	users map[int]*model.User
+	users map[int64]*model.User
 }
 
 //CreateUser is a function for creating user
@@ -20,7 +20,7 @@ func (u *UserRepository) CreateUser(user *model.User) error {
 		return store.ErrUserExists
 	}
 
-	user.ID = len(u.users) + 1
+	user.ID = int64(len(u.users) + 1)
 	u.users[user.ID] = user
 
 	return nil
@@ -38,7 +38,7 @@ func (u *UserRepository) findUser(user *model.User) *model.User {
 }
 
 //FindUserByID is a function for searching user by id
-func (u *UserRepository) FindUserByID(ID int) *model.User {
+func (u *UserRepository) FindUserByID(ID int64) *model.User {
 	for _, u := range u.users {
 		if u.ID == ID {
 			return u
