@@ -3,7 +3,6 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 	"testing"
 )
 
@@ -23,14 +22,10 @@ func TestDB(t *testing.T, databaseURL string) (*sql.DB, func(...string)) {
 	db.Exec("SET FOREIGN_KEY_CHECKS = 0;")
 	return db, func(tables ...string) {
 		if len(tables) > 0 {
-			truncateString := strings.Builder{}
 			for _, table := range tables {
-				truncateString.WriteString(fmt.Sprintf("TRUNCATE TABLE %s;", table))
-
+				db.Exec(fmt.Sprintf("TRUNCATE TABLE %s;", table))
 			}
-			db.Exec(truncateString.String())
 		}
-
 		db.Close()
 	}
 }

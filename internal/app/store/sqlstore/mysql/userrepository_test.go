@@ -37,4 +37,25 @@ func TestUserRepository_FindUserByID(t *testing.T) {
 
 	user := store.User().FindUserByID(newUser.ID)
 	assert.NotNil(t, user)
+
+	user = store.User().FindUserByID(newUser.ID + 1)
+	assert.Nil(t, user)
+}
+
+func TestUserRepository_FindUserByTgID(t *testing.T) {
+	db, tearDown := mysql.TestDB(t, databaseURL)
+	defer tearDown("users")
+
+	store := mysql.New(db)
+	newUser := model.TestUser()
+
+	err := store.User().CreateUser(newUser)
+	assert.NoError(t, err)
+	assert.NotNil(t, newUser)
+
+	user := store.User().FindUserByTgID(newUser.TgID)
+	assert.NotNil(t, user)
+
+	user = store.User().FindUserByTgID(newUser.TgID + 1)
+	assert.Nil(t, user)
 }

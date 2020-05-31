@@ -1,7 +1,6 @@
 package mysql
 
 import (
-	"fmt"
 	"qask/internal/app/model"
 )
 
@@ -29,7 +28,6 @@ func (u *UserRepository) FindUserByID(ID int64) *model.User {
 	user := &model.User{}
 
 	if err := u.store.db.QueryRow("SELECT id, tgid, username, firstname FROM users WHERE id = ?", ID).Scan(&user.ID, &user.TgID, &user.UserName, &user.FirstName); err != nil {
-		fmt.Println(err)
 		return nil
 	}
 
@@ -40,8 +38,7 @@ func (u *UserRepository) FindUserByID(ID int64) *model.User {
 func (u *UserRepository) FindUserByTgID(TgID int64) *model.User {
 	user := &model.User{}
 
-	if err := u.store.db.QueryRow("SELECT id FROM users WHERE tgid = ?", TgID).Scan(&user.ID); err != nil {
-		fmt.Println(err)
+	if err := u.store.db.QueryRow("SELECT id, username, firstname FROM users WHERE tgid = ?", TgID).Scan(&user.ID, &user.UserName, &user.FirstName); err != nil {
 		return nil
 	}
 
