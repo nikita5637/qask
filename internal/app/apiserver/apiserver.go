@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"net/http"
 	"qask/internal/app/questions/www"
-	"qask/internal/app/store/teststore"
+	"qask/internal/app/store/sqlstore/mysql"
+	"qask/internal/app/store/sqlstore/postgres"
 
 	"github.com/sirupsen/logrus"
 )
@@ -16,30 +17,38 @@ func Start(config *Config) error {
 		return err
 	}
 
-	// db, err := newDB(config.DatabaseURL)
-	// if err != nil {
-	// return err
-	// }
+	db, err := newDB(config.DatabaseDriver, config.DatabaseURL)
+	if err != nil {
+		return err
+	}
 
-	store := teststore.New()
+	var server *server
 	questions := www.New()
+	switch config.DatabaseDriver {
+	case "mysql":
+		store := mysql.New(db)
+		server = newServer(store, questions)
+	case "postgres":
+		store := postgres.New(db)
+		server = newServer(store, questions)
+	}
 
-	server := newServer(store, questions)
 	server.logger.SetLevel(level)
 
 	server.logger.Infof("Server started with params")
 	server.logger.Infof("Bind address \"%s\"", config.BindAddr)
+	server.logger.Infof("Database Driver \"%s\"", config.DatabaseDriver)
 
 	return http.ListenAndServe(config.BindAddr, server)
 }
 
-func newDB(databaseURL string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", databaseURL)
+func newDB(databaseDriver string, databaseURL string) (*sql.DB, error) {
+	db, err := sql.Open(databaseDriver, databaseURL)
 	if err != nil {
 		return nil, err
 	}
 
-	defer db.Close()
+	//defer db.Close()
 
 	if err := db.Ping(); err != nil {
 		return nil, err

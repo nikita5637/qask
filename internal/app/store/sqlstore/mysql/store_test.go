@@ -1,4 +1,4 @@
-package sqlstore_test
+package mysql_test
 
 import (
 	"os"
@@ -10,7 +10,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	databaseURL = "host=172.20.0.2 user=postgres dbname=qask_test sslmode=disable"
+	databaseURL = "root:12345678@tcp(172.20.0.5)/qask_test"
 
 	os.Exit(m.Run())
 }

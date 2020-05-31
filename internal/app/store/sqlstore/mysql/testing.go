@@ -1,4 +1,4 @@
-package sqlstore
+package mysql
 
 import (
 	"database/sql"
@@ -9,7 +9,9 @@ import (
 
 //TestDB returns database and teardown function
 func TestDB(t *testing.T, databaseURL string) (*sql.DB, func(...string)) {
-	db, err := sql.Open("postgres", databaseURL)
+	t.Helper()
+
+	db, err := sql.Open("mysql", databaseURL)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,8 +22,12 @@ func TestDB(t *testing.T, databaseURL string) (*sql.DB, func(...string)) {
 
 	return db, func(tables ...string) {
 		if len(tables) > 0 {
-			truncateString := fmt.Sprintf("TRUNCATE %s CASCADE", strings.Join(tables, ", "))
-			db.Exec(truncateString)
+			truncateString := strings.Builder{}
+			for _, table := range tables {
+				truncateString.WriteString(fmt.Sprintf("TRUNCATE TABLE %s;", table))
+
+			}
+			db.Exec(truncateString.String())
 		}
 
 		db.Close()
