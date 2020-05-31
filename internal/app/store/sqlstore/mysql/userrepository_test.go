@@ -18,6 +18,10 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	err := store.User().CreateUser(user)
 	assert.NoError(t, err)
 	assert.NotNil(t, user)
+
+	//Duplicate username
+	err = store.User().CreateUser(user)
+	assert.Error(t, err)
 }
 
 func TestUserRepository_FindUserByID(t *testing.T) {

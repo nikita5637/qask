@@ -20,6 +20,7 @@ func TestDB(t *testing.T, databaseURL string) (*sql.DB, func(...string)) {
 		t.Fatal(err)
 	}
 
+	db.Exec("SET FOREIGN_KEY_CHECKS = 0;")
 	return db, func(tables ...string) {
 		if len(tables) > 0 {
 			truncateString := strings.Builder{}
