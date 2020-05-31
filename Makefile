@@ -1,8 +1,8 @@
 build:
-	go build -v ./cmd/apiserver
+	go build -v ./cmd/qask
 
 run:
-	go run ./cmd/apiserver
+	go run ./cmd/qask
 
 test:
 	go test -v -race ./...
