@@ -11,8 +11,8 @@ type UserRepository struct {
 
 //CreateUser is a function for creating user
 func (u *UserRepository) CreateUser(user *model.User) error {
-	if err := u.store.db.QueryRow("INSERT INTO users (username, firstname) VALUES ($1, $2) RETURNING id",
-		user.UserName, user.FirstName).Scan(&user.ID); err != nil {
+	if err := u.store.db.QueryRow("INSERT INTO users (username, firstname, tgid) VALUES ($1, $2, $3) RETURNING id",
+		user.UserName, user.FirstName, user.TgID).Scan(&user.ID); err != nil {
 		return err
 	}
 
