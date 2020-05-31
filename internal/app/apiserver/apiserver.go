@@ -2,6 +2,7 @@ package apiserver
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"qask/internal/app/questions/www"
 	"qask/internal/app/store/sqlstore/mysql"
@@ -17,14 +18,15 @@ func Start(config *Config) error {
 		return err
 	}
 
-	db, err := newDB(config.DatabaseDriver, config.DatabaseURL)
+	databaseURL := fmt.Sprintf("%s:%s@tcp(%s)/%s", config.DBUser, config.DBPassword, config.DBIP, config.DBName)
+	db, err := newDB(config.DBDriver, databaseURL)
 	if err != nil {
 		return err
 	}
 
 	var server *server
 	questions := www.New()
-	switch config.DatabaseDriver {
+	switch config.DBDriver {
 	case "mysql":
 		store := mysql.New(db)
 		server = newServer(store, questions)
@@ -37,7 +39,9 @@ func Start(config *Config) error {
 
 	server.logger.Infof("Server started with params")
 	server.logger.Infof("Bind address \"%s\"", config.BindAddr)
-	server.logger.Infof("Database Driver \"%s\"", config.DatabaseDriver)
+	server.logger.Infof("Database Driver \"%s\"", config.DBDriver)
+	server.logger.Infof("Database IP \"%s\"", config.DBIP)
+	server.logger.Infof("Database Name \"%s\"", config.DBName)
 
 	return http.ListenAndServe(config.BindAddr, server)
 }
