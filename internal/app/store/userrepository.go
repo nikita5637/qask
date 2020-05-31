@@ -6,7 +6,7 @@ import "qask/internal/app/model"
 //for working with users
 type UserRepository interface {
 	CreateUser(*model.User) error
-	FindUserByID(int) *model.User
+	FindUserByID(int64) *model.User
 	FindUserByTgID(int64) *model.User
 	FindUserByUserName(string) *model.User
 	GetUsers() []*model.User

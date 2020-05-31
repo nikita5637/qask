@@ -19,13 +19,13 @@ func (u *UserRepository) CreateUser(user *model.User) error {
 	}
 
 	lastInsertID, err := res.LastInsertId()
-	user.ID = int(lastInsertID)
+	user.ID = lastInsertID
 
 	return nil
 }
 
 //FindUserByID is a function for searching user by id
-func (u *UserRepository) FindUserByID(ID int) *model.User {
+func (u *UserRepository) FindUserByID(ID int64) *model.User {
 	user := &model.User{}
 
 	if err := u.store.db.QueryRow("SELECT id, tgid, username, firstname FROM users WHERE id = ?", ID).Scan(&user.ID, &user.TgID, &user.UserName, &user.FirstName); err != nil {
@@ -38,7 +38,14 @@ func (u *UserRepository) FindUserByID(ID int) *model.User {
 
 //FindUserByTgID is a function for searching user by telegram id
 func (u *UserRepository) FindUserByTgID(TgID int64) *model.User {
-	return nil
+	user := &model.User{}
+
+	if err := u.store.db.QueryRow("SELECT id FROM users WHERE tgid = ?", TgID).Scan(&user.ID); err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	return user
 }
 
 //FindUserByUserName is a function for searching user by username

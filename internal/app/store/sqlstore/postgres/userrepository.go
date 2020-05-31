@@ -20,7 +20,7 @@ func (u *UserRepository) CreateUser(user *model.User) error {
 }
 
 //FindUserByID is a function for searching user by id
-func (u *UserRepository) FindUserByID(ID int) *model.User {
+func (u *UserRepository) FindUserByID(ID int64) *model.User {
 	user := &model.User{}
 
 	if err := u.store.db.QueryRow("SELECT id, tgid, username, firstname FROM users WHERE id = $1", ID).Scan(&user.ID, &user.TgID, &user.UserName, &user.FirstName); err != nil {

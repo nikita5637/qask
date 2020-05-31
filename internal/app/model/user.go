@@ -15,7 +15,7 @@ type userPublic struct {
 }
 
 type userPrivate struct {
-	ID       int    `json:"ID"`
+	ID       int64  `json:"ID"`
 	UserName string `json:"userName"`
 	TgID     int64  `json:"tgID"`
 }

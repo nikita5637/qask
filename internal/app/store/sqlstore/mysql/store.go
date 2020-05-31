@@ -12,6 +12,7 @@ type Store struct {
 	db                 *sql.DB
 	questionRepository *QuestionRepository
 	userRepository     *UserRepository
+	reportRepository   *ReportRepository
 }
 
 //New returns new struct Store
@@ -45,4 +46,18 @@ func (s *Store) User() store.UserRepository {
 	}
 
 	return s.userRepository
+}
+
+//Report returns report repository
+func (s *Store) Report() store.ReportRepository {
+	if s.reportRepository != nil {
+		return s.reportRepository
+	}
+
+	s.reportRepository = &ReportRepository{
+		store: s,
+	}
+
+	return s.reportRepository
+
 }
