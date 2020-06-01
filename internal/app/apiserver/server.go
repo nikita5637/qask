@@ -49,10 +49,6 @@ func (s *server) configureRouter() {
 }
 
 func (s *server) logRequest(next http.Handler) http.Handler {
-	type responseWriter struct {
-		http.ResponseWriter
-		code int
-	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger := s.logger.WithFields(logrus.Fields{
@@ -61,7 +57,7 @@ func (s *server) logRequest(next http.Handler) http.Handler {
 		logger.Infof("started request %s %s", r.RequestURI, r.Method)
 
 		start := time.Now()
-		newResponseWriter := responseWriter{w, http.StatusOK}
+		newResponseWriter := &responseWriter{w, http.StatusOK}
 
 		next.ServeHTTP(newResponseWriter, r)
 
