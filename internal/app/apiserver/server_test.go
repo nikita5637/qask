@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"qask/internal/app/model"
 	"qask/internal/app/questions/testwww"
+	"qask/internal/app/store/sqlstore/mysql"
 	"qask/internal/app/store/teststore"
 	"testing"
 
@@ -14,12 +15,16 @@ import (
 )
 
 func Test_server_handleGetUser(t *testing.T) {
-	store := teststore.New()
+	db, tearDown := mysql.TestDB(t, "root:12345678@tcp(172.20.0.5)/qask_test")
+	tearDown("users")
+
+	store := mysql.New(db)
 	questions := testwww.New()
 	s := newServer(store, questions)
 
 	user := model.TestUser()
-	s.store.User().CreateUser(user)
+	err := s.store.User().CreateUser(user)
+	assert.NoError(t, err)
 
 	tests := []struct {
 		name    string
@@ -28,28 +33,80 @@ func Test_server_handleGetUser(t *testing.T) {
 		expect  int
 	}{
 		{
-			name: "valid request",
-			path: "/users/1",
+			name: "valid request with id",
+			path: "/users/id/1",
 			payload: map[string]string{
 				"from": "telegram",
 			},
 			expect: http.StatusOK,
 		},
 		{
-			name: "invalid request (user not found)",
-			path: "/users/2",
+			name: "valid request with tgid",
+			path: "/users/tgid/100",
+			payload: map[string]string{
+				"from": "telegram",
+			},
+			expect: http.StatusOK,
+		},
+		{
+			name: "invalid request with id (user not found)",
+			path: "/users/id/2",
 			payload: map[string]string{
 				"from": "telegram",
 			},
 			expect: http.StatusNotFound,
 		},
 		{
-			name: "invalid request (invalid from)",
-			path: "/users/2",
+			name: "invalid request with tgid (user not found)",
+			path: "/users/tgid/101",
+			payload: map[string]string{
+				"from": "telegram",
+			},
+			expect: http.StatusNotFound,
+		},
+		{
+			name: "invalid request with id (invalid id)",
+			path: "/users/id/100000000000000000000000000000000000000",
+			payload: map[string]string{
+				"from": "telegram",
+			},
+			expect: http.StatusBadRequest,
+		},
+		{
+			name: "invalid request with tgid (invalid tgid)",
+			path: "/users/tgid/100000000000000000000000000000000000000",
+			payload: map[string]string{
+				"from": "telegram",
+			},
+			expect: http.StatusBadRequest,
+		},
+		{
+			name: "invalid request with id (invalid from)",
+			path: "/users/id/1",
 			payload: map[string]string{
 				"from": "telega",
 			},
 			expect: http.StatusBadRequest,
+		},
+		{
+			name: "invalid request with tgid (invalid from)",
+			path: "/users/tgid/100",
+			payload: map[string]string{
+				"from": "telega",
+			},
+			expect: http.StatusBadRequest,
+		},
+		{
+			name:    "invalid request with id (nil payload)",
+			path:    "/users/id/1",
+			payload: nil,
+			expect:  http.StatusBadRequest,
+		},
+		{
+			name:    "invalid request with tgid (nil payload)",
+			path:    "/users/tgid/100",
+			payload: nil,
+			expect:  http.StatusBadRequest,
 		},
 	}
 
