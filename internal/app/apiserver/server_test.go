@@ -16,7 +16,7 @@ import (
 
 func Test_server_handleGetUser(t *testing.T) {
 	db, tearDown := mysql.TestDB(t, "root:12345678@tcp(172.20.0.5)/qask_test")
-	tearDown("users")
+	defer tearDown("users")
 
 	store := mysql.New(db)
 	questions := testwww.New()
