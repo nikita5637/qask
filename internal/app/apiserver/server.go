@@ -44,7 +44,8 @@ func (s *server) configureRouter() {
 	s.router.HandleFunc("/reports", s.handleReportsPost()).Methods("POST")
 	s.router.HandleFunc("/users", s.handleUsersGet()).Methods("GET")
 	s.router.HandleFunc("/users", s.handleUsersPost()).Methods("POST")
-	s.router.HandleFunc("/users/{id:[0-9]+}", s.handleGetUser()).Methods("GET")
+	s.router.HandleFunc("/users/id/{id:[0-9]+}", s.handleGetUserByID()).Methods("GET")
+	s.router.HandleFunc("/users/tgid/{tgid:[0-9]+}", s.handleGetUserByTgID()).Methods("GET")
 }
 
 func (s *server) logRequest(next http.Handler) http.Handler {
@@ -68,7 +69,7 @@ func (s *server) logRequest(next http.Handler) http.Handler {
 	})
 }
 
-func (s *server) handleGetUser() http.HandlerFunc {
+func (s *server) handleGetUserByID() http.HandlerFunc {
 	type request struct {
 		From string `json:"from"`
 	}
@@ -99,6 +100,47 @@ func (s *server) handleGetUser() http.HandlerFunc {
 		}
 
 		user := s.store.User().FindUserByID(id)
+		if user == nil {
+			s.error(w, r, http.StatusNotFound, errors.New("User not found"))
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		s.respond(w, r, http.StatusOK, user)
+	})
+}
+
+func (s *server) handleGetUserByTgID() http.HandlerFunc {
+	type request struct {
+		From string `json:"from"`
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Body == nil {
+			s.error(w, r, http.StatusBadRequest, errors.New("Empty body"))
+			return
+		}
+
+		req := &request{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		if req.From != "telegram" {
+			s.error(w, r, http.StatusBadRequest, errors.New("Unknown From"))
+			return
+		}
+
+		vars := mux.Vars(r)
+		strID := vars["tgid"]
+		id, err := strconv.ParseInt(strID, 10, 64)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, errors.New("Invalid user id"))
+			return
+		}
+
+		user := s.store.User().FindUserByTgID(id)
 		if user == nil {
 			s.error(w, r, http.StatusNotFound, errors.New("User not found"))
 			return
