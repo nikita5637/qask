@@ -2,10 +2,13 @@ package model
 
 import (
 	"fmt"
+
+	validation "github.com/go-ozzo/ozzo-validation"
 )
 
 var (
 	minFirstNameLength       = 3
+	maxFirstNameLength       = 64
 	minUserNameLength        = 6
 	minTgID            int64 = 1
 )
@@ -28,6 +31,10 @@ type User struct {
 
 //Validate is a function for validating user model
 func (u *User) Validate() error {
+	if err := validation.Validate(u.FirstName, validation.Required, validation.NotNil, validation.Length(minFirstNameLength, maxFirstNameLength)); err != nil {
+		return err
+	}
+
 	if len(u.FirstName) < minFirstNameLength {
 		return fmt.Errorf("Firstname less than %d", minFirstNameLength)
 	}
