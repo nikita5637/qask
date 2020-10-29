@@ -11,6 +11,7 @@ import (
 	"qask/internal/app/store/teststore"
 	"testing"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -130,19 +131,41 @@ func Test_server_handleGetUser(t *testing.T) {
 }
 
 func Test_server_handleQuestionsGet(t *testing.T) {
-	store := teststore.New()
+	db, tearDown := mysql.TestDB(t, "root:12345678@tcp(172.20.0.5)/qask_test")
+	defer tearDown("users")
+
+	store := mysql.New(db)
 	questions := testwww.New()
 
 	server := newServer(store, questions)
 	tests := []struct {
-		name string
-		want http.HandlerFunc
+		name    string
+		payload interface{}
+		expect  int
 	}{
-		// TODO: Add test cases.
+		{
+			name: "valid request",
+			payload: map[string]string{
+				"from": "telegram",
+			},
+			expect: http.StatusOK,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			server = server
+			rec := httptest.NewRecorder()
+
+			b := &bytes.Buffer{}
+			if tt.payload != nil {
+				err := json.NewEncoder(b).Encode(tt.payload)
+				assert.NoError(t, err)
+			}
+
+			req, err := http.NewRequest(http.MethodGet, "/questions", b)
+			assert.NoError(t, err)
+
+			server.ServeHTTP(rec, req)
+			assert.Equal(t, tt.expect, rec.Code)
 		})
 	}
 }
@@ -197,9 +220,13 @@ func Test_server_handleUsersGet(t *testing.T) {
 }
 
 func Test_server_handleUsersPost(t *testing.T) {
-	store := teststore.New()
+	db, tearDown := mysql.TestDB(t, "root:12345678@tcp(172.20.0.5)/qask_test")
+	defer tearDown("users")
+
+	store := mysql.New(db)
 	questions := testwww.New()
 	s := newServer(store, questions)
+	s.logger.SetLevel(logrus.WarnLevel)
 
 	testCases := []struct {
 		name    string
@@ -243,7 +270,7 @@ func Test_server_handleUsersPost(t *testing.T) {
 				"tgID":      100,
 				"from":      "telegram",
 			},
-			expect: http.StatusBadRequest,
+			expect: http.StatusCreated,
 		},
 		{
 			name:    "nil payload",
