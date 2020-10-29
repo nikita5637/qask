@@ -2,9 +2,9 @@ package qaskerrors
 
 //QaskErr is a main type of error
 type QaskErr struct {
-	Message string
-	Code    uint16
-	Err     error
+	Message string `json:"errMessage"`
+	Code    uint16 `json:"errCode"`
+	Err     error  `json:"-"`
 }
 
 //Error returns an error description message

@@ -28,7 +28,7 @@ func (u *UserRepository) CreateUser(user *model.User) error {
 		switch sqlErr.Number {
 		case 1062:
 			err := qaskerrors.ErrUserExists
-			err.Err = qaskerrors.ErrUserExists
+			err.Err = sqlErr
 			return err
 		}
 		return sqlErr

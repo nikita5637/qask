@@ -282,8 +282,10 @@ func (s *server) handleUsersPost() http.HandlerFunc {
 		newUser.TgID = req.TgID
 
 		if err := s.store.User().CreateUser(&newUser); err != nil {
-			s.logger.Warnf("%s", errors.Unwrap(err).Error())
-			if errors.Is(err, qaskerrors.ErrUserExists) {
+			if err := errors.Unwrap(err); err != nil {
+				s.logger.Warnf("%s", err.Error())
+			}
+			if err.Error() == qaskerrors.ErrUserExists.Error() {
 				s.error(w, r, http.StatusBadRequest, qaskerrors.ErrUserExists)
 			} else {
 				s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 8))
@@ -296,7 +298,7 @@ func (s *server) handleUsersPost() http.HandlerFunc {
 }
 
 func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err qaskerrors.QaskErr) {
-	s.respond(w, r, code, map[string]interface{}{"message": err.Error(), "code": err.Code})
+	s.respond(w, r, code, err)
 }
 
 func (s *server) respond(w http.ResponseWriter, r *http.Request, code int, data interface{}) {
