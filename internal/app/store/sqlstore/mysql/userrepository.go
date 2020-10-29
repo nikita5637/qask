@@ -2,6 +2,9 @@ package mysql
 
 import (
 	"qask/internal/app/model"
+	"qask/internal/app/qaskerrors"
+
+	"github.com/go-sql-driver/mysql"
 )
 
 //UserRepository is a users sql store
@@ -17,7 +20,18 @@ func (u *UserRepository) CreateUser(user *model.User) error {
 
 	res, err := u.store.db.Exec("INSERT INTO users (username, firstname, tgid) VALUES (?, ?, ?);", user.UserName, user.FirstName, user.TgID)
 	if err != nil {
-		return err
+		sqlErr, ok := err.(*mysql.MySQLError)
+		if !ok {
+			return err
+		}
+
+		switch sqlErr.Number {
+		case 1062:
+			err := qaskerrors.ErrUserExists
+			err.Err = qaskerrors.ErrUserExists
+			return err
+		}
+		return sqlErr
 	}
 
 	lastInsertID, err := res.LastInsertId()

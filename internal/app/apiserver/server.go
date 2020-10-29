@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"qask/internal/app/model"
+	"qask/internal/app/qaskerrors"
 	"qask/internal/app/questions"
 	"qask/internal/app/store"
 	"strconv"
@@ -72,18 +73,18 @@ func (s *server) handleGetUserByID() http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Body == nil {
-			s.error(w, r, http.StatusBadRequest, errors.New("Empty body"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrEmptyBody)
 			return
 		}
 
 		req := &request{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 4))
 			return
 		}
 
 		if req.From != "telegram" {
-			s.error(w, r, http.StatusBadRequest, errors.New("Unknown From"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrUnknownFrom)
 			return
 		}
 
@@ -91,13 +92,13 @@ func (s *server) handleGetUserByID() http.HandlerFunc {
 		strID := vars["id"]
 		id, err := strconv.ParseInt(strID, 10, 64)
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, errors.New("Invalid user id"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.New("Invalid user id", 9))
 			return
 		}
 
 		user := s.store.User().FindUserByID(id)
 		if user == nil {
-			s.error(w, r, http.StatusNotFound, errors.New("User not found"))
+			s.error(w, r, http.StatusNotFound, qaskerrors.New("User not found", 11))
 			return
 		}
 
@@ -113,18 +114,18 @@ func (s *server) handleGetUserByTgID() http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Body == nil {
-			s.error(w, r, http.StatusBadRequest, errors.New("Empty body"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrEmptyBody)
 			return
 		}
 
 		req := &request{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 18))
 			return
 		}
 
 		if req.From != "telegram" {
-			s.error(w, r, http.StatusBadRequest, errors.New("Unknown From"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrUnknownFrom)
 			return
 		}
 
@@ -132,13 +133,13 @@ func (s *server) handleGetUserByTgID() http.HandlerFunc {
 		strID := vars["tgid"]
 		id, err := strconv.ParseInt(strID, 10, 64)
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, errors.New("Invalid user id"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.New("Invalid user id", 1))
 			return
 		}
 
 		user := s.store.User().FindUserByTgID(id)
 		if user == nil {
-			s.error(w, r, http.StatusNotFound, errors.New("User not found"))
+			s.error(w, r, http.StatusNotFound, qaskerrors.New("User not found", 1))
 			return
 		}
 
@@ -156,12 +157,12 @@ func (s *server) handleQuestionsGet() http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		req := &request{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 10))
 			return
 		}
 
 		if req.From != "telegram" {
-			s.error(w, r, http.StatusBadRequest, errors.New("Unknown From"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrUnknownFrom)
 			return
 		}
 
@@ -189,30 +190,30 @@ func (s *server) handleReportsPost() http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Body == nil {
-			s.error(w, r, http.StatusBadRequest, errors.New("Empty body"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrEmptyBody)
 			return
 		}
 
 		req := &request{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 21))
 			return
 		}
 
 		if req.From != "telegram" {
-			s.error(w, r, http.StatusBadRequest, errors.New("Unknown From"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrUnknownFrom)
 			return
 		}
 
 		if req.From == "telegram" {
 			user := s.store.User().FindUserByTgID(req.TgID)
 			if user == nil {
-				s.error(w, r, http.StatusBadRequest, errors.New("User not found"))
+				s.error(w, r, http.StatusBadRequest, qaskerrors.New("User not found", 15))
 				return
 			}
 
 			if err := s.store.Report().CreateReport(int64(user.ID), req.Message); err != nil {
-				s.error(w, r, http.StatusBadRequest, err)
+				s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 6))
 				return
 			}
 
@@ -230,18 +231,18 @@ func (s *server) handleUsersGet() http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Body == nil {
-			s.error(w, r, http.StatusBadRequest, errors.New("Empty body"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrEmptyBody)
 			return
 		}
 
 		req := &request{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 21))
 			return
 		}
 
 		if req.From != "telegram" {
-			s.error(w, r, http.StatusBadRequest, errors.New("Unknown From"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrUnknownFrom)
 			return
 		}
 
@@ -260,18 +261,18 @@ func (s *server) handleUsersPost() http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Body == nil {
-			s.error(w, r, http.StatusBadRequest, errors.New("Empty body"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrEmptyBody)
 			return
 		}
 
 		req := &request{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 23))
 			return
 		}
 
 		if req.From != "telegram" {
-			s.error(w, r, http.StatusBadRequest, errors.New("Unknown From"))
+			s.error(w, r, http.StatusBadRequest, qaskerrors.ErrUnknownFrom)
 			return
 		}
 
@@ -281,7 +282,12 @@ func (s *server) handleUsersPost() http.HandlerFunc {
 		newUser.TgID = req.TgID
 
 		if err := s.store.User().CreateUser(&newUser); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.logger.Warnf("%s", errors.Unwrap(err).Error())
+			if errors.Is(err, qaskerrors.ErrUserExists) {
+				s.error(w, r, http.StatusBadRequest, qaskerrors.ErrUserExists)
+			} else {
+				s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 8))
+			}
 			return
 		}
 
@@ -289,13 +295,20 @@ func (s *server) handleUsersPost() http.HandlerFunc {
 	})
 }
 
-func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
-	s.respond(w, r, code, map[string]string{"error": err.Error()})
+func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err qaskerrors.QaskErr) {
+	s.respond(w, r, code, map[string]interface{}{"message": err.Error(), "code": err.Code})
 }
 
 func (s *server) respond(w http.ResponseWriter, r *http.Request, code int, data interface{}) {
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(code)
 	if data != nil {
 		json.NewEncoder(w).Encode(data)
+		b, err := json.Marshal(data)
+		if err != nil {
+			return
+		}
+
+		s.logger.Debugf("Answer text: %s", string(b))
 	}
 }
