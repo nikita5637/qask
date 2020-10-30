@@ -24,6 +24,8 @@ func (e Errno) Is(target error) bool {
 		return e == EDUPENTRY
 	case ErrInvalidSQLSyntax:
 		return e == EINVALIDMYSQLSYNTAX || e == EINVALIDPOSTGRESQLSYNTAX
+	case ErrSQLDataTooLong:
+		return e == EMYSQLDATATOOLONG
 	}
 	return false
 }

@@ -3,6 +3,7 @@ package mysql_test
 import (
 	"qask/internal/app/model"
 	"qask/internal/app/store/sqlstore/mysql"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,6 +21,16 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	assert.NotNil(t, user)
 
 	//Duplicate username
+	_, err = store.User().CreateUser(user)
+	assert.Error(t, err)
+
+	//Username too long
+	user.UserName = strings.Repeat("A", 101)
+	_, err = store.User().CreateUser(user)
+	assert.Error(t, err)
+
+	//Invalid username
+	user.UserName = string(0)
 	_, err = store.User().CreateUser(user)
 	assert.Error(t, err)
 }

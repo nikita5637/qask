@@ -35,6 +35,12 @@ func (u *UserRepository) createUser(user *model.User) (int64, error) {
 				Code:    sqlErr.Number,
 				Err:     qaskerrors.EINVALIDMYSQLSYNTAX,
 			}
+		case 1406:
+			return 0, qaskerrors.QaskErr{
+				Message: sqlErr.Error(),
+				Code:    sqlErr.Number,
+				Err:     qaskerrors.EMYSQLDATATOOLONG,
+			}
 		}
 		return 0, sqlErr
 	}
