@@ -281,14 +281,20 @@ func (s *server) handleUsersPost() http.HandlerFunc {
 		newUser.UserName = req.UserName
 		newUser.TgID = req.TgID
 
-		if err := s.store.User().CreateUser(&newUser); err != nil {
+		if _, err := s.store.User().CreateUser(&newUser); err != nil {
 			if err := errors.Unwrap(err); err != nil {
 				s.logger.Warnf("%s", err.Error())
 			}
-			if err.Error() == qaskerrors.ErrUserExists.Error() {
-				s.error(w, r, http.StatusBadRequest, qaskerrors.ErrUserExists)
+			if errors.Is(err, qaskerrors.ErrUserExists) {
+				s.error(w, r, http.StatusBadRequest, &qaskerrors.QaskErr{
+					Message: "Пользователь уже существует",
+					Code:    701,
+				})
 			} else {
-				s.error(w, r, http.StatusBadRequest, qaskerrors.New(err.Error(), 8))
+				s.error(w, r, http.StatusBadRequest, &qaskerrors.QaskErr{
+					Message: qaskerrors.ErrUnknown.Error(),
+					Code:    700,
+				})
 			}
 			return
 		}
@@ -297,8 +303,10 @@ func (s *server) handleUsersPost() http.HandlerFunc {
 	})
 }
 
-func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err qaskerrors.QaskErr) {
-	s.respond(w, r, code, err)
+func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
+	if e, ok := err.(*qaskerrors.QaskErr); ok {
+		s.respond(w, r, code, e)
+	}
 }
 
 func (s *server) respond(w http.ResponseWriter, r *http.Request, code int, data interface{}) {

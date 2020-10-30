@@ -16,7 +16,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	user1.UserName = "UserName_1"
 	user1.TgID = 100
 
-	err := store.User().CreateUser(user1)
+	_, err := store.User().CreateUser(user1)
 	assert.NoError(t, err)
 
 	//Creating a second user with same telegram id
@@ -25,7 +25,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	user2.UserName = "UserName_2"
 	user2.TgID = 100
 
-	err = store.User().CreateUser(user2)
+	_, err = store.User().CreateUser(user2)
 	assert.Error(t, err)
 
 	//Creating a third user with same username
@@ -34,7 +34,7 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	user3.UserName = "UserName_1"
 	user3.TgID = 200
 
-	err = store.User().CreateUser(user3)
+	_, err = store.User().CreateUser(user3)
 	assert.Error(t, err)
 }
 
@@ -42,7 +42,7 @@ func TestUserRepository_FindUserByID(t *testing.T) {
 	store := New()
 
 	testUser := model.TestUser()
-	err := store.User().CreateUser(testUser)
+	_, err := store.User().CreateUser(testUser)
 	assert.NoError(t, err)
 
 	user := store.User().FindUserByID(1)
@@ -56,7 +56,7 @@ func TestUserRepository_FindUserByTgID(t *testing.T) {
 	store := New()
 
 	testUser := model.TestUser()
-	err := store.User().CreateUser(testUser)
+	_, err := store.User().CreateUser(testUser)
 	assert.NoError(t, err)
 
 	user := store.User().FindUserByTgID(100)
@@ -70,7 +70,7 @@ func TestUserRepository_FindUserByUserName(t *testing.T) {
 	store := New()
 
 	testUser := model.TestUser()
-	err := store.User().CreateUser(testUser)
+	_, err := store.User().CreateUser(testUser)
 	assert.NoError(t, err)
 
 	user := store.User().FindUserByUserName("TestUser_UserName")

@@ -16,7 +16,7 @@ func TestReportRepository_CreateReport(t *testing.T) {
 	user := model.TestUser()
 	assert.NotNil(t, user)
 
-	err := store.User().CreateUser(user)
+	_, err := store.User().CreateUser(user)
 	assert.NoError(t, err)
 
 	tests := []struct {

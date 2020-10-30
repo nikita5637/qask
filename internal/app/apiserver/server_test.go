@@ -24,7 +24,7 @@ func Test_server_handleGetUser(t *testing.T) {
 	s := newServer(store, questions)
 
 	user := model.TestUser()
-	err := s.store.User().CreateUser(user)
+	_, err := s.store.User().CreateUser(user)
 	assert.NoError(t, err)
 
 	tests := []struct {

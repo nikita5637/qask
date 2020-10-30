@@ -10,13 +10,13 @@ type UserRepository struct {
 }
 
 //CreateUser is a function for creating user
-func (u *UserRepository) CreateUser(user *model.User) error {
+func (u *UserRepository) CreateUser(user *model.User) (int64, error) {
 	if err := u.store.db.QueryRow("INSERT INTO users (username, firstname, tgid) VALUES ($1, $2, $3) RETURNING id",
 		user.UserName, user.FirstName, user.TgID).Scan(&user.ID); err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return user.ID, nil
 }
 
 //FindUserByID is a function for searching user by id

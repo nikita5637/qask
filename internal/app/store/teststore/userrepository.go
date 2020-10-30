@@ -11,19 +11,19 @@ type UserRepository struct {
 }
 
 //CreateUser is a function for creating user
-func (u *UserRepository) CreateUser(user *model.User) error {
+func (u *UserRepository) CreateUser(user *model.User) (int64, error) {
 	if err := user.Validate(); err != nil {
-		return err
+		return 0, err
 	}
 
 	if tmpUser := u.findUser(user); tmpUser != nil {
-		return store.ErrUserExists
+		return 0, store.ErrUserExists
 	}
 
 	user.ID = int64(len(u.users) + 1)
 	u.users[user.ID] = user
 
-	return nil
+	return user.ID, nil
 }
 
 func (u *UserRepository) findUser(user *model.User) *model.User {

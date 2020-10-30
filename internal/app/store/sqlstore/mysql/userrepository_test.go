@@ -15,12 +15,12 @@ func TestUserRepository_CreateUser(t *testing.T) {
 	store := mysql.New(db)
 	user := model.TestUser()
 
-	err := store.User().CreateUser(user)
+	_, err := store.User().CreateUser(user)
 	assert.NoError(t, err)
 	assert.NotNil(t, user)
 
 	//Duplicate username
-	err = store.User().CreateUser(user)
+	_, err = store.User().CreateUser(user)
 	assert.Error(t, err)
 }
 
@@ -31,7 +31,7 @@ func TestUserRepository_FindUserByID(t *testing.T) {
 	store := mysql.New(db)
 	newUser := model.TestUser()
 
-	err := store.User().CreateUser(newUser)
+	_, err := store.User().CreateUser(newUser)
 	assert.NoError(t, err)
 	assert.NotNil(t, newUser)
 
@@ -49,7 +49,7 @@ func TestUserRepository_FindUserByTgID(t *testing.T) {
 	store := mysql.New(db)
 	newUser := model.TestUser()
 
-	err := store.User().CreateUser(newUser)
+	_, err := store.User().CreateUser(newUser)
 	assert.NoError(t, err)
 	assert.NotNil(t, newUser)
 
