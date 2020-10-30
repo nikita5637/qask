@@ -12,11 +12,11 @@ func TestDB(t *testing.T, databaseURL string) (*sql.DB, func(...string)) {
 
 	db, err := sql.Open("mysql", databaseURL)
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 
 	if err := db.Ping(); err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 
 	db.Exec("SET FOREIGN_KEY_CHECKS = 0;")
