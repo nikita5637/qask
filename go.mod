@@ -12,6 +12,7 @@ require (
 	github.com/lib/pq v1.3.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.2.2
-	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
 	golang.org/x/text v0.3.2 // indirect
+	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
 )
