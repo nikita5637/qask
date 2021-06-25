@@ -14,5 +14,4 @@ require (
 	github.com/stretchr/testify v1.2.2
 	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
 	golang.org/x/text v0.3.2 // indirect
-	honnef.co/go/tools v0.0.1-2020.1.6 // indirect
 )
